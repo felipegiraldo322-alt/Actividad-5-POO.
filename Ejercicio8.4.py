@@ -4,11 +4,7 @@ from enum import Enum
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
-
-# ==========================================
-# Enumeraciones: TipoCargo y TipoGénero
-# ==========================================
-
+# Enumeraciones TipoCargo y TipoGénero
 class TipoCargo(Enum):
     """Dato enumerado que especifica el tipo de cargo que tiene un empleado."""
     DIRECTIVO = "Directivo"
@@ -22,10 +18,7 @@ class TipoGénero(Enum):
     FEMENINO = "Femenino"
 
 
-# ==========================================
-# Clase: Empleado
-# ==========================================
-
+# Clase Empleado
 class Empleado:
     """
     Esta clase denominada Empleado modela un empleado de una empresa que tiene
@@ -91,11 +84,7 @@ class Empleado:
             - self._aporte_pensiones
         )
 
-
-# ==========================================
 # Clase: ListaEmpleados
-# ==========================================
-
 class ListaEmpleados:
     """
     Esta clase denominada ListaEmpleados define una lista de objetos Empleado
@@ -150,11 +139,7 @@ class ListaEmpleados:
         texto += f"Total nómina = ${self.calcular_total_nómina():.2f}"
         return texto
 
-
-# ==========================================
-# Clase: VentanaAgregarEmpleado
-# ==========================================
-
+# Clase VentanaAgregarEmpleado
 class VentanaAgregarEmpleado(tk.Toplevel):
     """
     Define una ventana para ingresar los datos de un empleado y agregarlo
@@ -297,11 +282,7 @@ class VentanaAgregarEmpleado(tk.Toplevel):
                 "Error", "Campo nulo o error en formato de numero", parent=self
             )
 
-
-# ==========================================
 # Clase: VentanaNómina
-# ==========================================
-
 class VentanaNómina(tk.Toplevel):
     """
     Define una interfaz gráfica que permitirá consultar la lista de empleados
@@ -345,11 +326,7 @@ class VentanaNómina(tk.Toplevel):
             self, text=f"Total nómina mensual = $ {self.lista.total_nómina:.2f}"
         ).place(x=20, y=160, width=250, height=23)
 
-
-# ==========================================
 # Clase: VentanaPrincipal
-# ==========================================
-
 class VentanaPrincipal(tk.Tk):
     """
     Define una interfaz gráfica principal que permitirá gestionar la nómina
@@ -413,11 +390,7 @@ class VentanaPrincipal(tk.Tk):
             except Exception as e:
                 print(e)
 
-
-# ==========================================
-# Clase / Punto de entrada: Principal
-# ==========================================
-
+# Clase / Punto de entrada Principal
 class Principal:
     """Define el punto de ingreso al programa de la nómina de empleados."""
 
