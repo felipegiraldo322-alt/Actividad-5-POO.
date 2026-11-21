@@ -17,7 +17,6 @@ class TipoGénero(Enum):
     MASCULINO = "Masculino"
     FEMENINO = "Femenino"
 
-
 # Clase Empleado
 class Empleado:
     """
@@ -399,7 +398,6 @@ class Principal:
         mi_ventana_principal = VentanaPrincipal()
         mi_ventana_principal.resizable(False, False)
         mi_ventana_principal.mainloop()
-
 
 if __name__ == "__main__":
     Principal.main()

@@ -1,10 +1,10 @@
-# Ejercicio 8.5. Gestión de contenidos
+# Ejercicio 8.5: Gestión de huéspedes
 
 from datetime import datetime
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, simpledialog
 
-# Clase huésped
+# Clase Huésped
 class Huésped:
     """
     Esta clase denominada Huésped define un huésped del hotel que
@@ -34,7 +34,7 @@ class Huésped:
         diferencia = self._fecha_salida - self._fecha_ingreso
         return int(diferencia.total_seconds() // 86400)
 
-# Clase habitación
+# Clase Habitación
 class Habitación:
     """
     Esta clase denominada Habitación define una habitación de un hotel
@@ -65,7 +65,7 @@ class Habitación:
     def set_disponible(self, disponible: bool) -> None:
         self._disponible = disponible
 
-# Clase hotel
+# Clase Hotel
 class Hotel:
     """
     Esta clase denominada Hotel define un hotel que contiene diez
@@ -100,7 +100,7 @@ class Hotel:
                 return True
         return False
 
-# Clase VentanaIngreso
+# Clase: VentanaIngreso
 class VentanaIngreso(tk.Toplevel):
     """
     Define una ventana que permite ingresar los datos del huésped que
@@ -129,7 +129,7 @@ class VentanaIngreso(tk.Toplevel):
     def _inicio(self) -> None:
         pad = {"padx": 3, "pady": 3}
 
-        tk.Label(self, text=f"Habitación {self.número_habitación_reservada}").grid(
+        tk.Label(self, text=f"Habitación: {self.número_habitación_reservada}").grid(
             row=0, column=0, sticky="w", **pad
         )
 
@@ -197,7 +197,6 @@ class VentanaIngreso(tk.Toplevel):
     def _cancelar(self) -> None:
         self.destroy()
 
-
 # Clase VentanaHabitaciones
 class VentanaHabitaciones(tk.Toplevel):
     """
@@ -263,6 +262,114 @@ class VentanaHabitaciones(tk.Toplevel):
         else:
             messagebox.showinfo("Mensaje", "La habitación está ocupada", parent=self)
 
+# Clase VentanaSalida
+class VentanaSalida(tk.Toplevel):
+    """
+    Define una ventana que permite registrar la salida de un huésped y su
+    pago correspondiente de acuerdo al número de días de alojamiento.
+    """
+
+    def __init__(self, parent: tk.Misc, hotel: Hotel, número: int):
+        super().__init__(parent)
+        self.hotel = hotel
+        self.número_habitación = número
+        self.posición_habitación: int = -1
+        self.habitación_ocupada: Habitación | None = None
+        self.title("Salida huéspedes")
+        self.geometry("260x260")
+        self.resizable(False, False)
+        self._centrar_ventana()
+        self._inicio()
+
+    def _centrar_ventana(self) -> None:
+        self.update_idletasks()
+        ancho = self.winfo_width()
+        alto = self.winfo_height()
+        x = (self.winfo_screenwidth() // 2) - (ancho // 2)
+        y = (self.winfo_screenheight() // 2) - (alto // 2)
+        self.geometry(f"{ancho}x{alto}+{x}+{y}")
+
+    def _inicio(self) -> None:
+        pad = {"padx": 3, "pady": 3}
+
+        tk.Label(self, text=f"Habitación: {self.número_habitación}").grid(
+            row=0, column=0, sticky="w", **pad
+        )
+
+        fecha = self.hotel.buscar_fecha_ingreso_habitación(self.número_habitación)
+        tk.Label(self, text=f"Fecha de ingreso: {fecha}").grid(
+            row=1, column=0, sticky="w", **pad
+        )
+
+        tk.Label(self, text="Fecha de salida (AAAA-MM-DD): ").grid(
+            row=2, column=0, sticky="w", **pad
+        )
+
+        self.campo_fecha_salida = tk.Entry(self)
+        self.campo_fecha_salida.grid(row=3, column=0, sticky="ew", **pad)
+
+        tk.Button(self, text="Calcular", command=self._calcular).grid(
+            row=4, column=0, sticky="ew", **pad
+        )
+
+        self.etiqueta_cantidad_días = tk.Label(self, text="Cantidad de días: ")
+        self.etiqueta_cantidad_días.grid(row=5, column=0, sticky="w", **pad)
+
+        self.etiqueta_total_pago = tk.Label(self, text="Total: $")
+        self.etiqueta_total_pago.grid(row=6, column=0, sticky="w", **pad)
+
+        self.boton_registrar_salida = tk.Button(
+            self, text="RegistrarSalida", state=tk.DISABLED, command=self._registrar_salida
+        )
+        self.boton_registrar_salida.grid(row=7, column=0, sticky="ew", **pad)
+
+    def _calcular(self) -> None:
+        fecha_s = self.campo_fecha_salida.get().strip()
+        for i, hab in enumerate(self.hotel.lista_habitaciones):
+            if hab.get_número_habitación() == self.número_habitación:
+                self.posición_habitación = i
+                self.habitación_ocupada = hab
+                try:
+                    fecha2 = datetime.strptime(fecha_s, "%Y-%m-%d")
+                    huésped = self.habitación_ocupada.get_huésped()
+                    if huésped is None:
+                        return
+                    huésped.set_fecha_salida(fecha2)
+                    fecha1 = huésped.get_fecha_ingreso()
+                    if fecha1 is not None and fecha1 < fecha2:
+                        cantidad = huésped.obtener_días_alojamiento()
+                        self.etiqueta_cantidad_días.config(
+                            text=f"Cantidad de días: {cantidad}"
+                        )
+                        valor = cantidad * self.habitación_ocupada.get_precio_día()
+                        self.etiqueta_total_pago.config(text=f"Total: ${valor}")
+                        self.boton_registrar_salida.config(state=tk.NORMAL)
+                    else:
+                        messagebox.showerror(
+                            "Mensaje",
+                            "La fecha de salida es menor que la de ingreso",
+                            parent=self,
+                        )
+                except ValueError:
+                    messagebox.showerror(
+                        "Mensaje",
+                        "La fecha no está en el formato solicitado",
+                        parent=self,
+                    )
+                break
+
+    def _registrar_salida(self) -> None:
+        if self.habitación_ocupada is not None:
+            self.habitación_ocupada.set_huésped(None)
+            self.habitación_ocupada.set_disponible(True)
+            self.hotel.lista_habitaciones[self.posición_habitación] = (
+                self.habitación_ocupada
+            )
+            messagebox.showinfo(
+                "Mensaje", "Se ha registrado la salida del huésped", parent=self
+            )
+            self.destroy()
+
 # Clase VentanaPrincipal
 class VentanaPrincipal(tk.Tk):
     """
@@ -303,15 +410,44 @@ class VentanaPrincipal(tk.Tk):
         VentanaHabitaciones(self, self.hotel)
 
     def _salida_huéspedes(self) -> None:
-        # Nota: VentanaSalida no aparece en el extracto del libro, pero se deja el flujo listo
-        messagebox.showinfo(
-            "Salida de huéspedes",
-            "Módulo de salida de huéspedes (VentanaSalida no incluida en el extracto).",
-            parent=self,
+        entrada = simpledialog.askstring(
+            "Salida de huéspedes", "Ingrese número de habitación", parent=self
         )
+        if entrada is None:
+            return
+        try:
+            número = int(entrada.strip())
+            if número < 1 or número > 10:
+                messagebox.showinfo(
+                    "Mensaje",
+                    "El número de habitación debe estar entre 1 y 10",
+                    parent=self,
+                )
+            elif self.hotel.buscar_habitación_ocupada(número):
+                VentanaSalida(self, self.hotel, número)
+            else:
+                messagebox.showinfo(
+                    "Mensaje",
+                    "La habitación ingresada no ha sido ocupada",
+                    parent=self,
+                )
+        except ValueError:
+            messagebox.showerror(
+                "Error", "Campo nulo o error en formato de numero", parent=self
+            )
 
+# Clase Principal
+class Principal:
+    """
+    Define el punto de ingreso al programa de ingreso y salida de huéspedes
+    de un hotel.
+    """
+
+    @staticmethod
+    def main(args: list[str] | None = None) -> None:
+        hotel = Hotel()
+        mi_ventana_principal = VentanaPrincipal(hotel)
+        mi_ventana_principal.mainloop()
 
 if __name__ == "__main__":
-    mi_hotel = Hotel()
-    app = VentanaPrincipal(mi_hotel)
-    app.mainloop()
+    Principal.main()
