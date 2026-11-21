@@ -1,4 +1,4 @@
-# Ejercicio 8.4. Cuadros de diálogo
+# Ejercicio 8.4. Cuadros de diálogo 
 
 from enum import Enum
 import tkinter as tk

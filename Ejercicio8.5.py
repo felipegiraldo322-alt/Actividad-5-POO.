@@ -1,4 +1,4 @@
-# Ejercicio 8.5. Gestión de contenidos
+# Ejercicio 8.5. Gestión de contenidos 
 
 from datetime import datetime
 import tkinter as tk
